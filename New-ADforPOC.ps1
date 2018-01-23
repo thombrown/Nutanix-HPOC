@@ -1,4 +1,4 @@
-#hardev.sanghera@nutanix.com
+#Original version written by hardev.sanghera@nutanix.com
 #Internal Use Only
 #Provided as is and unsupported
 #15Jan18
@@ -13,6 +13,7 @@
 #2. A deployed W2K12R2 VM (you can now request deployed VMs via your (AHV) rx reservation booking page)
 #3. This script copied to 2. above - copy it to c:\ - there will be 2 re-boots so it's easier to have it there, also it won't matter
 #   if you're domain logged or local. Use RDP to copy the file to c:\ but run it from a Prism console - it's easier!
+# To copy this straight from Github run the following command - '(Invoke-WebRequest https://raw.githubusercontent.com/thombrown/Nutanix/master/New-ADforPOC.ps1).content | Out-File C:\New-ADforPOC.ps1' 
 #3.1 On the VM to have AD deployed: You will need to 'Set-Executionpolicy RemoteSigned' (respond with Y) from a powershell window - STARTED IN ADMINISTRATOR MODE, to do this
 #    right click on the 'Powershell' icon in the task bar and select 'Run as Administrator' (just the first time to set RemoteSigned and run this script the first time
 #    You will run the script THREE times first two times as loca\Administrator and the last time as AD\Administrator - it remembers where it got to each time:
