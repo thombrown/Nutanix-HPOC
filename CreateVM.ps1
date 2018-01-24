@@ -9,41 +9,67 @@
             [System.Linq.Expressions.Expression]::Parameter([System.Net.Security.SslPolicyErrors], 'sslPolicyErrors'))).
         Compile()
 
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
-$ntnx_user_name = "admin"
+$ntnx_user_name = read-host "Enter username"
 $ntnx_user_password_clear = read-host "Enter Password"
-$ntnx_cluster_ip = "remote.thomas-brown.com"
+$ntnx_cluster_ip = read-host "Enter Cluster IP"
 
-$url = "https://${ntnx_cluster_ip}:9440/PrismGateway/services/rest/v2.0/vms/"
-$Header = @{"Authorization" = "Basic "+[System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($ntnx_user_name+":"+$ntnx_user_password_clear ))}
-$out = Invoke-WebRequest -Uri $url -Headers $Header -Method Get -ContentType 'application/json'
-$VMs = ($out.content | ConvertFrom-Json).entities
 
-<#
-This JSON creates a VM from a disk in the image service.  Call the Get images endpoint and get the vmdisk_uuid from the disk you want.
+$pair = "$($ntnx_user_name):$($ntnx_user_password_clear)"
+$encodedCreds = [System.Convert]::ToBase64String([System.Text.Encoding]::ASCII.GetBytes($pair))
+$basicAuthValue = "Basic $encodedCreds"
+$Headers = @{
+    Authorization = $basicAuthValue
+}
 
+Function Get-Image {
+
+    [CmdletBinding()]          
+
+Param($imageName)
+
+    Write-Verbose "You passed the parameter $item into the function"
+$out = Invoke-WebRequest -Uri "https://${ntnx_cluster_ip}:9440/api/nutanix/v2.0/images/" -Headers $Headers -Method Get -ContentType 'application/json'
+$images = ($out.content | ConvertFrom-Json).entities
+
+($images | Where-Object {$_.name -eq "$imageName"}).vm_disk_id
+
+}
+
+Function Create-VM {
+
+    [CmdletBinding()]          
+
+Param($item)
+
+    Write-Verbose "You passed the parameter $item into the function"
+
+    $body = @"
 {
-    "name":"TomsAPIVM",
-    "memory_mb":1024,
-    "num_vcpus":1,
-    "description":"",
-    "num_cores_per_vcpu":1,
-    "vm_disks":[
-    {
-    "is_cdrom":false,
-    "disk_address":{
-    "device_bus":"scsi"
-    },
-    "vm_disk_clone":{
-    "disk_address":{
-    "vmdisk_uuid":"1da777dd-bbfb-48a6-b116-d4ebe3442be2"
-    }
-    }
-    }
-    ]
-    }
+	"description": "",
+	"memory_mb": 2048,
+	"name": "NICVM",
+	"num_cores_per_vcpu": 1,
+	"num_vcpus": 2,
+	"storage_container_uuid": "94bb3404-db96-44d2-a4c7-f0434e0c6e2f",
+	"vm_disks": [{
+		"is_cdrom": false,
+		"vm_disk_clone": {
+			"disk_address": {
+				"vmdisk_uuid": "$2012image"
+			}
+		}
+	}],
+	"vm_nics": [{
+		"network_uuid": "04372deb-799d-4fc6-9d4c-ff1dbc20bf5a"
+	}]
+}
+"@
 
-    #>
+$out = Invoke-WebRequest -Uri "https://${ntnx_cluster_ip}:9440/PrismGateway/services/rest/v2.0/vms/" -Headers $Headers -Method Post -Body $body -ContentType 'application/json'
+}
+
 
 #Use this to call a RESTful API on Powershell Core
 #Invoke-WebRequest -Uri "https://remote.thomas-brown.com:9440/PrismGateway/services/rest/v2.0/vms/" -SkipCertificateCheck
