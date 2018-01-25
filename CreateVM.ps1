@@ -37,7 +37,7 @@ $images = ($out.content | ConvertFrom-Json).entities
 
 }
 
-Function Create-VM {
+Function New-VM {
 
     [CmdletBinding()]          
 
@@ -67,7 +67,7 @@ Param($item)
 }
 "@
 
-$out = Invoke-WebRequest -Uri "https://${ntnx_cluster_ip}:9440/PrismGateway/services/rest/v2.0/vms/" -Headers $Headers -Method Post -Body $body -ContentType 'application/json'
+Invoke-WebRequest -Uri "https://${ntnx_cluster_ip}:9440/PrismGateway/services/rest/v2.0/vms/" -Headers $Headers -Method Post -Body $body -ContentType 'application/json'
 }
 
 
