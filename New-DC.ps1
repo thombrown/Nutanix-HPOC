@@ -1,0 +1,1 @@
+Install-ADDSForest -CreateDnsDelegation:$false -DatabasePath 'C:\Windows\NTDS' -DomainMode 'Win2012R2' -DomainName 'lab.local' -DomainNetbiosName 'lab' -ForestMode 'Win2012R2' -InstallDns:$true -LogPath 'C:\Windows\NTDS' -SysvolPath 'C:\Windows\SYSVOL' -SafeModeAdministratorPassword (ConvertTo-SecureString -AsPlainText 'nutanix/4u' -Force) -Force:$true
